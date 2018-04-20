@@ -1,0 +1,26 @@
+{
+  "name": "zlick-sdk-v2",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "webpack": "^4.5.0",
+    "webpack-cli": "^2.0.14"
+  },
+  "dependencies": {
+    "axios": "^0.18.0",
+    "fs": "0.0.1-security",
+    "jsonwebtoken": "^8.2.1",
+    "lodash": "^4.17.5",
+    "path": "^0.12.7",
+    "raygun": "^0.9.1",
+    "winston": "^2.4.1"
+  }
+}
