@@ -3,32 +3,44 @@ import cookie from './cookie';
 import logger from './util/logger';
 import util from './util/util';
 import jwt from 'jsonwebtoken';
-import _ from 'lodash';
-
+/**
+ * @param  {String} token JWT token, signed with HS265 alorithm, containing purchase payload
+ * @async
+ * @function initZlick
+ * @returns {Promise} Promise that returns object containing UserId, contentId, contentState, subscripionState, challengeId and allowedMethods.
+ * @throws {error} throws error containing error code and reason if function fails.
+ */
 export async function initZlick(token) {
     try {
-        let instanceId = util.uuidv4();
+        const instanceId = util.uuidv4();
 
         // await cookie.setCookie('6e58cc3a-34ce-4cb5-9fc5-5a7358e13108');
 
         if (shouldDetectHeaders()) {
              await apiService.detectHeaders(instanceId);
         }
-        let userId = await cookie.getUserIdFromZlickCookie();
-        let identityResponse = await apiService.identify(token, instanceId, userId);
+        const userId = await cookie.getUserIdFromZlickCookie();
+        const identityResponse = await apiService.identify(token, instanceId, userId);
 
         return createResponse(identityResponse);
     } catch (error) {
         throw error;
     }
 }
-
+/**
+ * @param  {String} token JWT token, signed with HS265 alorithm, containing purchase payload
+ * @param {String} userId Zlick userID
+ * @async
+ * @function purchase
+ * @returns {Promise} Promise that returns object containing UserId, contentId, contentState, subscripionState, challengeId and allowedMethods.
+ * @throws {error} throws error containing error code and reason if function fails.
+ */
 export async function purchase(token, userId) {
     try {
         if (userId == null) {
             return createResponse(token);
         } else {
-            let purchaseResponse = await apiService.purchase(token, userId);
+            const purchaseResponse = await apiService.purchase(token, userId);
             if (smsAuhtNeeded(purchaseResponse)) {
                 return createResponse(token);
             } else {
@@ -39,14 +51,20 @@ export async function purchase(token, userId) {
         throw error;
     } 
 }
-
+/**
+ * @param  {String} token JWT token, signed with HS265 alorithm, containing purchase payload
+ * @param {String} userId Zlick userID
+ * @async
+ * @function subscribe
+ * @returns {Promise} Promise that returns object containing UserId, contentId, contentState, subscripionState, challengeId and allowedMethods.
+ * @throws {error} throws error containing error code and reason if function fails.
+ */
 export async function subscribe(token, userId) {
     try {
         if (userId == null) {
             return createResponse(token);
         } else {
-            let subscribeResponse = await apiService.subscribe(token, userId);
-    
+            const subscribeResponse = await apiService.subscribe(token, userId);
             if (smsAuhtNeeded(subscribeResponse)) {
                 return createResponse(token);
             } else {
@@ -57,42 +75,73 @@ export async function subscribe(token, userId) {
         throw error;
     }
 }
-
+/**
+ * @param  {String} token JWT token, signed with HS265 alorithm, containing purchase payload
+ * @param {String} userId Zlick userID
+ * @async
+ * @function unsubscribe
+ * @returns {Promise} Promise that returns object containing UserId, contentId, contentState, subscripionState, challengeId and allowedMethods.
+ * @throws {error} throws error containing error code and reason if function fails.
+ */
 export async function unsubscribe(token, userId) {
     try {
-        let unsubscribeResponse = await apiService.unsubscribe(token, userId);
+        const unsubscribeResponse = await apiService.unsubscribe(token, userId);
         return createResponse(unsubscribeResponse, userId)
     } catch (error) {
         throw error;
     }
         
 }
-
+/**
+ * @param  {String} token JWT token, signed with HS265 alorithm, containing purchase payload
+ * @param {String} userId Zlick userID
+ * @param {string} refundReason reason to refund purchase
+ * @async
+ * @function refund
+ * @returns {Promise} Promise that returns object containing UserId, contentId, contentState, subscripionState, challengeId and allowedMethods.
+ * @throws {error} throws error containing error code and reason if function fails.
+ */
 export async function refund(token, userId, refundReason) {
     try {
-        let refundResponse = await apiService.refund(token, userId, refundReason);
+        const refundResponse = await apiService.refund(token, userId, refundReason);
         return await createResponse(refundResponse);
     } catch (error) {
         throw error;
     }
 }
-
-export async function startSmsAuth(token, phone) {
+/**
+ * @param  {String} token JWT token, signed with HS265 alorithm, containing purchase payload
+ * @param {String} mobilePhoneNumber customer mobile number that starts SMS authentication
+ * @async
+ * @function startSmsAuth
+ * @returns {Promise} Promise that returns object containing UserId, contentId, contentState, subscripionState, challengeId and allowedMethods.
+ * @throws {error} throws error containing error code and reason if function fails.
+ */
+export async function startSmsAuth(token, mobilePhoneNumber) {
     try {
-        let startSmsAuthResponse = await apiService.smsAuthStart(token, phone);
+        const startSmsAuthResponse = await apiService.smsAuthStart(token, mobilePhoneNumber);
         return createResponse(token, startSmsAuthResponse.data.challengeId);
     } catch(error) {
         throw error;
     }  
 }
-
+/**
+ * @param {String} token JWT token, signed with HS265 alorithm, containing purchase payload
+ * @param {String} confirationCode 4 digit confirmation code sent to customers mobile number via SMS
+ * @param {String} challengeId id created by zlick and sent via smsAuthStart method to verify mobile number and challenge ID
+ * @param {String} paymentMethod can be either purchase or subscribe. Payment mehtod one wishes to trigger on successful SMS auhentication
+ * @async
+ * @function completeSmsAuth
+ * @returns {Promise} Promise that returns object containing UserId, contentId, contentState, subscripionState, challengeId and allowedMethods.
+ * @throws {error} throws error containing error code and reason if function fails.
+ */
 export async function completeSmsAuth(token, confirmationCode, challengeId, paymentMethod) {
    try {
-        let completeSmsAuthResponse = await apiService.smsAuthComplete(token, confirmationCode, challengeId);
+        const completeSmsAuthResponse = await apiService.smsAuthComplete(token, confirmationCode, challengeId);
         if (hasAccessRights(completeSmsAuthResponse)) {
             return createResponse(completeSmsAuthResponse);
         } else {
-            let userId = getUserIdFromToken(completeSmsAuthResponse);
+            const userId = getUserIdFromToken(completeSmsAuthResponse);
             
             if (paymentMethod === 'purchase') {
                 return purchase(token, userId);
@@ -113,9 +162,9 @@ function shouldDetectHeaders() {
 }
 
 function createResponse(apiResponse, challengeId) {
-    let tokenToDecode = apiResponse.data ? apiResponse.data.token : apiResponse;
-    let payload = jwt.decode(tokenToDecode);
-    let allowedMethods = getAllowedMethods(payload);
+    const tokenToDecode = apiResponse.data ? apiResponse.data.token : apiResponse;
+    const payload = jwt.decode(tokenToDecode);
+    const allowedMethods = getAllowedMethods(payload);
     return {
         userId: payload.userId || null,
         contentId: payload.contentId || null,

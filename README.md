@@ -9,3 +9,4 @@ TODO:
 4. add more telco / user error handling
 5. add more configuration to webpack, to make it production ready
 6. add unit tests
+7. create documentation

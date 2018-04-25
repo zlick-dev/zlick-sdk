@@ -12,9 +12,9 @@ export default {
             logger.send(error);
         });
     },
-    detectHeaders: (instance) => {
+    detectHeaders: (instanceId) => {
         let img = new Image();
-        img.src = 'http://api.zlick.it/api/zlick.gif?instance=' + instance;
+        img.src = 'http://api.zlick.it/api/zlick.gif?instance=' + instanceId;
     },
     purchase: (token, userId) => {
         return Api(token)
