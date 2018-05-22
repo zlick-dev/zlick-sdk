@@ -2,12 +2,11 @@ import jwt from 'jsonwebtoken'
 
 export default {
   setCookie: (apiResponse) => {
-    // add domain after development
-    // const domain = document.location.hostname.split('.').slice(-2).join('.')
+    const domain = document.location.hostname.split('.').slice(-2).join('.')
     let payload = jwt.decode(apiResponse.data.token)
     let userId = payload.userId
     let cookieMaxAge = payload.cookieMaxAge || 604800
-    document.cookie = 'zlick=' + userId + ';path=/;max-age=' + cookieMaxAge
+    document.cookie = 'zlick=' + userId + ';domain=.' + domain + ';path=/;max-age=' + cookieMaxAge
   },
 
   getUserIdFromZlickCookie: () => {

@@ -12,8 +12,6 @@ export default {
       }
     }).catch(error => {
         Raygun.send(error)
-        console.log(error)
-        console.log(JSON.stringify(error))
         throw new ApiError('Failed to make identify request with error message: ' + error.message, error)
     })
   },

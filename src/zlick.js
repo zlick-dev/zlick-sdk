@@ -3,6 +3,7 @@ import apiService from './services/apiService'
 import CookieService from './CookieService'
 import jwt from 'jsonwebtoken'
 import ZlickError from './errors/ZlickError'
+import moment from 'moment'
 
 export async function identifyClient (token) {
   try {
@@ -92,14 +93,12 @@ function shouldDetectHeaders () {
 function createResponse (apiResponse) {
   const tokenToDecode = apiResponse.data ? apiResponse.data.token : apiResponse
   const payload = jwt.decode(tokenToDecode)
-  console.log(payload)
-  const allowedMethods = getAllowedMethods(payload)
+
   return {
     userId: payload.userId || null,
     contentId: payload.contentId || null,
-    contentState: payload.contentState || null,
-    subscriptionState: payload.subscriptionState || null,
-    allowedMethods: allowedMethods
+    hasAccessRights: hasAccessRights(payload),
+    allowedMethods: allowedMethods(payload)
   }
 }
 
@@ -107,7 +106,7 @@ function responseHasUserId (response) {
   return jwt.decode(response.data.token).userId != null
 }
 
-function getAllowedMethods (responsePayload) {
+function allowedMethods (responsePayload) {
   let allowedMethods = {}
 
   if (responsePayload.subscriptionState && responsePayload.subscriptionState === 'active') {
@@ -124,7 +123,18 @@ function getAllowedMethods (responsePayload) {
     allowedMethods.smsAuth = true
   }
   if (responsePayload.carrierNotSupported) {
-    allowedMethods.paymentNotAllowed = true
+    allowedMethods.paymentsNotAllowed = true
   }
   return allowedMethods
+}
+
+function hasAccessRights (responsePayload) {
+  return responsePayload.contentState === 'purchased' || responsePayload.subscriptionState === 'active' || canceledSubscriptionHasNotExpired(responsePayload)
+}
+
+function canceledSubscriptionHasNotExpired (responsePayload) {
+  if (responsePayload.subscriptionState === 'canceled') {
+    return moment(responsePayload.subscriptionExpiresAt).toISOString() > moment().utc().toISOString()
+  }
+  return false
 }
