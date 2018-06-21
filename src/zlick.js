@@ -1,3 +1,4 @@
+import 'babel-polyfill'
 import uuid from 'uuid'
 import apiService from './services/apiService'
 import CookieService from './CookieService'
