@@ -4,6 +4,5 @@ export default class ZlickError extends Error {
     this.message = error.message
     this.statusCode = error.statusCode
     this.retryAttempts = error.retryAttempts
-    Error.captureStackTrace(this, ZlickError)
   }
 }

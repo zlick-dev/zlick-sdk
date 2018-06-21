@@ -4,6 +4,5 @@ export default class AuthenticationError extends Error {
     this.message = error.response.data.error
     this.retryAttempts = error.response.data.attempts
     this.statusCode = error.response.status
-    Error.captureStackTrace(this, AuthenticationError)
   }
 }
