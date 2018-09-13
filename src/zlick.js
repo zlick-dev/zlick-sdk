@@ -5,6 +5,7 @@ import CookieService from './CookieService'
 import jwt from 'jsonwebtoken'
 import ZlickError from './errors/ZlickError'
 import moment from 'moment'
+import Raygun from '../Raygun'
 
 export async function identifyClient (token) {
   try {
@@ -20,6 +21,7 @@ export async function identifyClient (token) {
     }
     return createResponse(identityResponse)
   } catch (error) {
+    Raygun.send(error)
     throw new ZlickError(error)
   }
 }
@@ -29,6 +31,7 @@ export async function sendPinCodeSMS ({token, mobilePhoneNumber}) {
     const startSmsAuthResponse = await apiService.smsAuthStart(token, mobilePhoneNumber)
     return startSmsAuthResponse.data.challengeId
   } catch (error) {
+    Raygun.send(error)
     throw new ZlickError(error)
   }
 }
@@ -39,6 +42,7 @@ export async function verifyPinCode ({token, confirmationCode, challengeId}) {
     CookieService.setCookie(completeSmsAuthResponse)
     return createResponse(completeSmsAuthResponse)
   } catch (error) {
+    Raygun.send(error)
     throw new ZlickError(error)
   }
 }
@@ -52,6 +56,7 @@ export async function purchase ({token, userId}) {
       return createResponse(purchaseResponse)
     }
   } catch (error) {
+    Raygun.send(error)
     throw new ZlickError(error)
   }
 }
@@ -61,6 +66,7 @@ export async function refundPurchase ({token, userId, refundReason}) {
     const refundResponse = await apiService.refund(token, userId, refundReason)
     return await createResponse(refundResponse)
   } catch (error) {
+    Raygun.send(error)
     throw new ZlickError(error)
   }
 }
@@ -74,6 +80,7 @@ export async function subscribe ({token, userId}) {
       return createResponse(subscribeResponse)
     }
   } catch (error) {
+    Raygun.send(error)
     throw new ZlickError(error)
   }
 }
@@ -83,6 +90,7 @@ export async function unsubscribe ({token, userId}) {
     const unsubscribeResponse = await apiService.unsubscribe(token, userId)
     return createResponse(unsubscribeResponse, userId)
   } catch (error) {
+    Raygun.send(error)
     throw new ZlickError(error)
   }
 }

@@ -1,4 +1,3 @@
-import Raygun from '../Raygun'
 import Api from './Api'
 import ApiError from '../errors/ApiError'
 import AuthenticationError from '../errors/AuthenticationError'
@@ -11,7 +10,6 @@ export default {
         userId: userId
       }
     }).catch(error => {
-      Raygun.send(error)
       throw new ApiError('Failed to make identify request with error message: ' + error.message, error)
     })
   },
@@ -22,28 +20,24 @@ export default {
   purchase: (token, userId) => {
     return Api(token).post('/purchase', {userId: userId})
       .catch(error => {
-        Raygun.send(error)
         throw new ApiError('Failed to make purchase request with error message: ' + error.message, error)
       })
   },
   refund: (token, userId, refundReason) => {
     return Api(token).post('/refund', {userId: userId, reason: refundReason})
       .catch(error => {
-        Raygun.send(error)
         throw new ApiError('Failed to make smsAuthStart request with error message: ' + error.message, error)
       })
   },
   smsAuthStart: (token, phoneNumber) => {
     return Api(token).post('/smsauth/start', {phone: phoneNumber})
       .catch((error) => {
-        Raygun.send(error)
         throw new ApiError('Failed to make smsAuthStart request with error message: ' + error.message, error)
       })
   },
   smsAuthComplete: (token, confirmationCode, challengeId) => {
     return Api(token).post('/smsauth/complete', {code: confirmationCode, challengeId: challengeId})
       .catch(error => {
-        Raygun.send(error)
         if (error.response && error.response.data.attempts > 0) {
           throw new AuthenticationError('Wrong PIN code', error)
         } else {
@@ -54,14 +48,12 @@ export default {
   unsubscribe: (token, userId) => {
     return Api(token).post('/unsubscribe', {userId})
       .catch(error => {
-        Raygun.send(error)
         throw new ApiError('Failed to make unsubscribe request with error message ' + error.message, error)
       })
   },
   subscribe: (token, userId) => {
     return Api(token).post('/subscribe', {userId})
       .catch(error => {
-        Raygun.send(error)
         throw new ApiError('Failed to make subscribe request with error message ' + error.message, error)
       })
   }
