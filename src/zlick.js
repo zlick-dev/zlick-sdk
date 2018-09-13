@@ -5,7 +5,7 @@ import CookieService from './CookieService'
 import jwt from 'jsonwebtoken'
 import ZlickError from './errors/ZlickError'
 import moment from 'moment'
-import Raygun from '../Raygun'
+import Raygun from './Raygun'
 
 export async function identifyClient (token) {
   try {
