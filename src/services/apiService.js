@@ -1,60 +1,36 @@
 import Api from './Api'
-import ApiError from '../errors/ApiError'
-import AuthenticationError from '../errors/AuthenticationError'
 
 export default {
   identify: (token, instanceId, userId) => {
-    return Api(token).get('/identify', {
-      params: {
-        instance: instanceId,
-        userId: userId
-      }
-    }).catch(error => {
-      throw new ApiError('Failed to make identify request with error message: ' + error.message, error)
-    })
+    return Api(token).post('/identify', { instanceId, userIdToken: userId || undefined })
+
   },
-  detectHeaders: (instanceId) => {
+  detectHeaders: (url) => {
     let img = new Image()
-    img.src = 'http://api.zlick.it/api/zlick.gif?instance=' + instanceId
+    img.src = url
+  },
+  headerEnrichment: (token) => {
+    return Api(token).get('/headerEnrichment')
+  },
+  userAccessToContent: ({ token, userId }) => {
+    return Api(token).get('/users/' + userId + '/purchases')
   },
   purchase: (token, userId) => {
     return Api(token).post('/purchase', {userId: userId})
-      .catch(error => {
-        throw new ApiError('Failed to make purchase request with error message: ' + error.message, error)
-      })
   },
-  refund: (token, userId, refundReason) => {
-    return Api(token).post('/refund', {userId: userId, reason: refundReason})
-      .catch(error => {
-        throw new ApiError('Failed to make smsAuthStart request with error message: ' + error.message, error)
-      })
+  refund: (token, transactionId, refundReason) => {
+    return Api(token).post('/refund', {transactionId, refundReason})
   },
   smsAuthStart: (token, phoneNumber) => {
-    return Api(token).post('/smsauth/start', {phone: phoneNumber})
-      .catch((error) => {
-        throw new ApiError('Failed to make smsAuthStart request with error message: ' + error.message, error)
-      })
+    return Api(token).post('/smsauth', {phone: phoneNumber})
   },
   smsAuthComplete: (token, confirmationCode, challengeId) => {
-    return Api(token).post('/smsauth/complete', {code: confirmationCode, challengeId: challengeId})
-      .catch(error => {
-        if (error.response && error.response.data.attempts > 0) {
-          throw new AuthenticationError('Wrong PIN code', error)
-        } else {
-          throw new ApiError('Failed to make smsAuthComplete request with error message: ' + error.message, error)
-        }
-      })
-  },
-  unsubscribe: (token, userId) => {
-    return Api(token).post('/unsubscribe', {userId})
-      .catch(error => {
-        throw new ApiError('Failed to make unsubscribe request with error message ' + error.message, error)
-      })
+    return Api(token).put('/smsauth', {pinCode: confirmationCode, challengeId: challengeId})
   },
   subscribe: (token, userId) => {
     return Api(token).post('/subscribe', {userId})
-      .catch(error => {
-        throw new ApiError('Failed to make subscribe request with error message ' + error.message, error)
-      })
+  },
+  unsubscribe: ({token, subscriptionId}) => {
+    return Api(token).put('/subscriptions/' + subscriptionId, {state: 'canceled'})
   }
 }

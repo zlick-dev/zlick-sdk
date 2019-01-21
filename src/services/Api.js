@@ -5,9 +5,7 @@ export default (token) => {
   return axios.create({
     baseURL: apiBaseUrl,
     headers: {
-      'Content-Type': 'application/json',
-      'zlick-referer': window.location.href,
-      'zlick-token': token
+      'Authorization': 'Bearer ' + token
     }
   })
 }

@@ -4,10 +4,10 @@ const CleanWebpackPlugin = require('clean-webpack-plugin')
 
 module.exports = {
   entry: {
-    'zlick': ['babel-polyfill', './src/zlick.js']
+    'zlick': './src/zlick.js'
   },
   output: {
-    filename: '[name]-2.0.1.min.js',
+    filename: '[name]-dev-2.2.0.min.js',
     path: path.resolve(__dirname, 'dist'),
     library: 'zlick'
   },
