@@ -183,8 +183,8 @@ function allowedMethods (response) {
     if (response.transactionResponse._id) allowedMethods.refundPurchase = true
     if (response.subscriptionResponse._id) allowedMethods.unsubscribe = true
   } else {
-    if (response.transactionResponse._id) allowedMethods.purchase = true
-    if (response.subscriptionResponse._id) allowedMethods.subscribe = true
+    allowedMethods.purchase = true
+    allowedMethods.subscribe = true
   }
   return allowedMethods
 }
