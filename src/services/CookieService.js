@@ -21,15 +21,3 @@ export default {
     return zlickCookie
   }
 }
-
-
-getCook = cookie => {
-  let cookiePrefix = 'zlick='
-  let cookiesArray = cookie.split(';')
-
-  return cookiesArray
-    .map(cookie => cookie.trim())
-    .filter(cookie => cookie.substring(0, cookiePrefix.length) === cookiePrefix)
-    .map(cookie => cookie.slice(cookiePrefix.length))
-    .toString()
-}
