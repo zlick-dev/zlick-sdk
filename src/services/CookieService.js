@@ -11,10 +11,25 @@ export default {
     let cookiePrefix = 'zlick='
     let cookiesArray = document.cookie.split(';')
 
-    return cookiesArray
+    const zlickCookie = cookiesArray
       .map(cookie => cookie.trim())
       .filter(cookie => cookie.substring(0, cookiePrefix.length) === cookiePrefix)
       .map(cookie => cookie.slice(cookiePrefix.length))
+      .filter(x => x.indexOf('userId') === -1)
       .toString()
+    
+    return zlickCookie
   }
+}
+
+
+getCook = cookie => {
+  let cookiePrefix = 'zlick='
+  let cookiesArray = cookie.split(';')
+
+  return cookiesArray
+    .map(cookie => cookie.trim())
+    .filter(cookie => cookie.substring(0, cookiePrefix.length) === cookiePrefix)
+    .map(cookie => cookie.slice(cookiePrefix.length))
+    .toString()
 }

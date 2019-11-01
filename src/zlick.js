@@ -27,6 +27,7 @@ export async function identifyClient (token) {
     const userAccessToContent = await apiService.userAccessToContent({token, userId: identifyResponse.data.userId})
 
     return {
+      phone: identifyResponse.data.phone || null,
       userId: identifyResponse.data.userId,
       jwtToken: identifyResponse.data.token,
       contentId: userAccessToContent.data.productName,

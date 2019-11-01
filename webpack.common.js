@@ -7,7 +7,7 @@ module.exports = {
     'zlick': './src/zlick.js'
   },
   output: {
-    filename: '[name]-dev-2.2.0.min.js',
+    filename: '[name]-dev-2.2.1.min.js',
     path: path.resolve(__dirname, 'dist'),
     library: 'zlick'
   },
