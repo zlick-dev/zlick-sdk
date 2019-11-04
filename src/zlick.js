@@ -4,14 +4,14 @@ import ZlickError from './errors/ZlickError'
 
 export async function identifyClient (token) {
   try {
-    let { data } = await apiService.headerEnrichment(token)
-    let { instanceId, url } = data
+    const { data } = await apiService.headerEnrichment(token)
+    const { instanceId, url } = data
     if (shouldDetectHeaders(url)) {
       await apiService.detectHeaders(url)
     }
     const userIdToken = CookieService.getUserIdFromZlickCookie()
     const identifyResponse = await apiService.identify(token, instanceId, userIdToken)
-    
+
     if (!identifyResponse.data.userId) {
       return {
         userId: null,
@@ -24,7 +24,7 @@ export async function identifyClient (token) {
       }
     }
     CookieService.setCookie(identifyResponse.data)
-    const userAccessToContent = await apiService.userAccessToContent({token, userId: identifyResponse.data.userId})
+    const userAccessToContent = await apiService.userAccessToContent({ token, userId: identifyResponse.data.userId })
 
     return {
       phone: identifyResponse.data.phone || null,
@@ -34,21 +34,21 @@ export async function identifyClient (token) {
       transactionId: userAccessToContent.data.transactionResponse._id,
       subscriptionId: userAccessToContent.data.subscriptionResponse._id,
       hasAccessRights: userAccessToContent.data.hasAccessToContent,
-      allowedMethods: allowedMethods(userAccessToContent.data),
+      allowedMethods: allowedMethods(userAccessToContent.data)
     }
   } catch (error) {
     throw new ZlickError(error)
   }
 }
 
-export async function sendPinCodeSMS ({token, mobilePhoneNumber}) {
+export async function sendPinCodeSMS ({ token, mobilePhoneNumber }) {
   try {
     const startSmsAuthResponse = await apiService.smsAuthStart(token, mobilePhoneNumber)
     return {
       userId: null,
       contentId: null,
       hasAccessRights: false,
-      allowedMethods: {verifyPinCode: true},
+      allowedMethods: { verifyPinCode: true },
       jwtToken: null,
       challengeId: startSmsAuthResponse.data.challengeId
     }
@@ -57,10 +57,10 @@ export async function sendPinCodeSMS ({token, mobilePhoneNumber}) {
   }
 }
 
-export async function verifyPinCode ({token, confirmationCode, challengeId}) {
+export async function verifyPinCode ({ token, confirmationCode, challengeId }) {
   try {
     const completeSmsAuthResponse = await apiService.smsAuthComplete(token, confirmationCode, challengeId)
-    const userAccessToContent = await apiService.userAccessToContent({token, userId: completeSmsAuthResponse.data.userId})
+    const userAccessToContent = await apiService.userAccessToContent({ token, userId: completeSmsAuthResponse.data.userId })
     CookieService.setCookie(completeSmsAuthResponse.data)
     return {
       userId: completeSmsAuthResponse.data.userId,
@@ -69,14 +69,14 @@ export async function verifyPinCode ({token, confirmationCode, challengeId}) {
       transactionId: userAccessToContent.data.transactionResponse._id,
       subscriptionId: userAccessToContent.data.subscriptionResponse._id,
       hasAccessRights: userAccessToContent.data.hasAccessToContent,
-      allowedMethods: allowedMethods(userAccessToContent.data),
+      allowedMethods: allowedMethods(userAccessToContent.data)
     }
   } catch (error) {
     throw new ZlickError(error)
   }
 }
 
-export async function purchase ({token, userId}) {
+export async function purchase ({ token, userId }) {
   try {
     if (!userId) {
       return {
@@ -98,7 +98,7 @@ export async function purchase ({token, userId}) {
         hasAccessRights: true,
         allowedMethods: {
           refundPurchase: true
-        },
+        }
       }
     }
   } catch (error) {
@@ -106,7 +106,7 @@ export async function purchase ({token, userId}) {
   }
 }
 
-export async function refundPurchase ({token, transactionId, refundReason}) {
+export async function refundPurchase ({ token, transactionId, refundReason }) {
   try {
     const refundResponse = await apiService.refund(token, transactionId, refundReason)
     return {
@@ -124,7 +124,7 @@ export async function refundPurchase ({token, transactionId, refundReason}) {
   }
 }
 
-export async function subscribe ({token, userId}) {
+export async function subscribe ({ token, userId }) {
   try {
     if (!userId) {
       return {
@@ -146,7 +146,7 @@ export async function subscribe ({token, userId}) {
         hasAccessRights: true,
         allowedMethods: {
           unsubscribe: true
-        },
+        }
       }
     }
   } catch (error) {
@@ -154,9 +154,9 @@ export async function subscribe ({token, userId}) {
   }
 }
 
-export async function unsubscribe ({token, subscriptionId}) {
+export async function unsubscribe ({ token, subscriptionId }) {
   try {
-    const unsubscribeResponse = await apiService.unsubscribe({token, subscriptionId})
+    const unsubscribeResponse = await apiService.unsubscribe({ token, subscriptionId })
     return {
       userId: unsubscribeResponse.data.userId,
       jwtToken: unsubscribeResponse.data.token,
@@ -177,7 +177,7 @@ function shouldDetectHeaders (url) {
 }
 
 function allowedMethods (response) {
-  let allowedMethods = {}
+  const allowedMethods = {}
   allowedMethods.sendPinCode = true
 
   if (response.hasAccessToContent) {
@@ -189,4 +189,3 @@ function allowedMethods (response) {
   }
   return allowedMethods
 }
-

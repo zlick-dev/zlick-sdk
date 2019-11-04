@@ -4,7 +4,7 @@ const CleanWebpackPlugin = require('clean-webpack-plugin')
 
 module.exports = {
   entry: {
-    'zlick': './src/zlick.js'
+    zlick: './src/zlick.js'
   },
   output: {
     filename: '[name]-dev-2.2.2.min.js',
