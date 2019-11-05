@@ -1,13 +1,14 @@
 const path = require('path')
 const Dotenv = require('dotenv-webpack')
 const CleanWebpackPlugin = require('clean-webpack-plugin')
+const packageInfo = require('./package.json')
 
 module.exports = {
   entry: {
     zlick: './src/zlick.js'
   },
   output: {
-    filename: '[name]-dev-2.2.2.min.js',
+    filename: `[name]-dev-${packageInfo.version}.min.js`,
     path: path.resolve(__dirname, 'dist'),
     library: 'zlick'
   },
