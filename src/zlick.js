@@ -2,6 +2,7 @@ import apiService from './services/apiService'
 import CookieService from './services/CookieService'
 import ZlickError from './errors/ZlickError'
 
+export const setCookie = CookieService.setCookie
 export async function identifyClient (token) {
   try {
     const { data } = await apiService.headerEnrichment(token)
