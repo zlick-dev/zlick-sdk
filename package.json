@@ -1,8 +1,8 @@
 {
-  "name": "zlick-sdk-v2",
+  "name": "zlick-sdk",
   "version": "2.5.0",
-  "description": "",
-  "private": true,
+  "description": "Zlick SDK",
+  "homepage": "https://github.com/zlick-dev/zlick-sdk",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build:prod": "NODE_ENV=production webpack --config webpack.prod.js",
@@ -12,9 +12,9 @@
     "start": "webpack-dev-server --open --config webpack.dev.js",
     "deploy": "aws s3 cp ./dist s3://cdn.zlick.it --recursive --acl public-read && aws cloudfront create-invalidation --distribution-id EAQ0I6M41G5B8 --paths \"/*\""
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": ["zlick", "payments"],
+  "author": "Arsalan Ahmad <arsalan@zlick.it>",
+  "license": "MIT",
   "devDependencies": {
     "@babel/cli": "^7.7.0",
     "@babel/core": "^7.7.2",
