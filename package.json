@@ -12,6 +12,7 @@
     "start": "webpack-dev-server --open --config webpack.dev.js",
     "deploy": "aws s3 cp ./dist s3://cdn.zlick.it --recursive --acl public-read && aws cloudfront create-invalidation --distribution-id EAQ0I6M41G5B8 --paths \"/*\""
   },
+  "main": "src/zlick.js",
   "keywords": ["zlick", "payments"],
   "author": "Arsalan Ahmad <arsalan@zlick.it>",
   "license": "MIT",
