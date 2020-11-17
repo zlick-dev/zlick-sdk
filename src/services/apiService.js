@@ -32,5 +32,8 @@ export default {
   },
   unsubscribe: ({ token, subscriptionId }) => {
     return Api(token).put('/subscriptions/' + subscriptionId, { state: 'canceled' })
-  }
+  },
+  ipBillingStatus: ({ token, challengeId }) => {
+    return Api(token).post('/ipb/status', { challengeId })
+  },
 }

@@ -2,6 +2,28 @@ import apiService from './services/apiService'
 import CookieService from './services/CookieService'
 import ZlickError from './errors/ZlickError'
 
+let ipbUrl = null
+
+const INTENTS = {
+  SUBSCRIBE: 'subscribe',
+  PURCHASE: 'purchase'
+}
+
+export const CHALLENGE_STATUS = {
+  ACTIVE: 'active',
+  FAILED: 'failed',
+  PENDING: 'pending',
+  EXPIRED: 'expired'
+}
+
+export const AUTH_TYPES = {
+  PINCODE_SMS: 'PINCODE_SMS', // Regular SMS pincode auth
+  SMS_CONFIRMATION: 'SMS_CONFIRMATION', // Dimoco style
+  CARRIER_PROXY: 'CARRIER_PROXY' // DNA in Finland
+}
+
+export const setCookie = CookieService.setCookie
+
 export async function identifyClient (token) {
   try {
     const { data } = await apiService.headerEnrichment(token)
@@ -12,11 +34,17 @@ export async function identifyClient (token) {
     const userIdToken = CookieService.getUserIdFromZlickCookie()
     const identifyResponse = await apiService.identify(token, instanceId, userIdToken)
 
+    if (identifyResponse.data.ipbUrl) {
+      ipbUrl = identifyResponse.data.ipbUrl
+    }
+
     if (!identifyResponse.data.userId) {
       return {
         userId: null,
         contentId: null,
         hasAccessRights: false,
+        challengeId: identifyResponse.data.challengeId || null,
+        authMethod: identifyResponse.data.authMethod,
         allowedMethods: {
           smsAuth: true
         },
@@ -26,7 +54,7 @@ export async function identifyClient (token) {
     CookieService.setCookie(identifyResponse.data)
     const userAccessToContent = await apiService.userAccessToContent({ token, userId: identifyResponse.data.userId })
 
-    return {
+    const response = {
       phone: identifyResponse.data.phone || null,
       userId: identifyResponse.data.userId,
       jwtToken: identifyResponse.data.token,
@@ -36,6 +64,8 @@ export async function identifyClient (token) {
       hasAccessRights: userAccessToContent.data.hasAccessToContent,
       allowedMethods: allowedMethods(userAccessToContent.data)
     }
+
+    return response
   } catch (error) {
     throw new ZlickError(error)
   }
@@ -50,7 +80,8 @@ export async function sendPinCodeSMS ({ token, mobilePhoneNumber }) {
       hasAccessRights: false,
       allowedMethods: { verifyPinCode: true },
       jwtToken: null,
-      challengeId: startSmsAuthResponse.data.challengeId
+      challengeId: startSmsAuthResponse.data.challengeId,
+      authMethod: startSmsAuthResponse.data.authMethod
     }
   } catch (error) {
     throw new ZlickError(error)
@@ -124,7 +155,7 @@ export async function refundPurchase ({ token, transactionId, refundReason }) {
   }
 }
 
-export async function subscribe ({ token, userId }) {
+async function subscribeByTokenAndUserId ({ token, userId }) {
   try {
     if (!userId) {
       return {
@@ -152,6 +183,64 @@ export async function subscribe ({ token, userId }) {
   } catch (error) {
     throw new ZlickError(error)
   }
+}
+
+function closeWindow(windowRef) {
+  if (windowRef) {
+    windowRef.close()
+  }
+}
+
+export async function checkIpBillingStatus ({ challengeId, token, windowRef, timeout = 60 }) {
+  return new Promise((resolve, reject) => {
+    let timeCompleted = 0
+    const responses = []
+    const interval = setInterval(async () => {
+
+      if (timeCompleted >= timeout) {
+        const resolvedResponses = await Promise.all(responses)
+        closeWindow(windowRef)
+        clearInterval(interval)
+        resolve({ ...resolvedResponses.pop(), status: CHALLENGE_STATUS.EXPIRED, allowedMethods: { smsAuth: true } })
+        return
+      }
+
+      timeCompleted += 1
+      try {
+        const response = await apiService.ipBillingStatus({ token, challengeId })
+        responses.push(response.data)
+        const finalStatus = [CHALLENGE_STATUS.ACTIVE, CHALLENGE_STATUS.FAILED, CHALLENGE_STATUS.EXPIRED]
+        if (finalStatus.includes(response.data.status)) {
+          CookieService.setCookie(response.data)
+          clearInterval(interval)
+          closeWindow(windowRef)
+          resolve({ ...response.data, allowedMethods: { smsAuth: response.data.status !== CHALLENGE_STATUS.ACTIVE } })
+          return
+        }
+        if (windowRef && windowRef.closed) {
+          clearInterval(interval)
+          resolve(response.data)
+        }
+      } catch (error) {
+        reject(new ZlickError(error))
+      }
+    }, 1000)
+  })
+}
+
+export async function subscribeByChallengeId({ token, challengeId, timeout = 60 }) {
+  if (!ipbUrl) {
+    return { status, userIdToken: null, subscription: null }
+  }
+  const windowRef = window.open(`${ipbUrl}/?intent=${INTENTS.SUBSCRIBE}&clientJwtToken=${token}&challengeId=${challengeId}`)
+  return checkIpBillingStatus({ challengeId, token, windowRef, timeout })
+}
+
+export async function subscribe({ token, userId, challengeId, timeout = 60 }) {
+  if (challengeId) {
+    return subscribeByChallengeId({ token, challengeId, timeout })
+  }
+  return subscribeByTokenAndUserId({ token, userId })
 }
 
 export async function unsubscribe ({ token, subscriptionId }) {
