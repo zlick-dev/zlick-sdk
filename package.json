@@ -1,6 +1,6 @@
 {
   "name": "zlick-sdk",
-  "version": "2.6.0",
+  "version": "2.6.1",
   "description": "Zlick SDK",
   "homepage": "https://github.com/zlick-dev/zlick-sdk",
   "scripts": {
