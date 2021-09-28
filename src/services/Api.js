@@ -5,7 +5,8 @@ export default (token) => {
   return axios.create({
     baseURL: apiBaseUrl,
     headers: {
-      Authorization: 'Bearer ' + token
+      Authorization: 'Bearer ' + token,
+      'Referrer-Policy': 'no-referrer-when-downgrade'
     }
   })
 }
