@@ -1,6 +1,8 @@
 import apiService from './services/apiService'
 import CookieService from './services/CookieService'
 import ZlickError from './errors/ZlickError'
+import base64 from './utils/base64'
+import axios from 'axios'
 
 let ipbUrl = null
 
@@ -71,9 +73,9 @@ export async function identifyClient (token) {
   }
 }
 
-export async function sendPinCodeSMS ({ token, mobilePhoneNumber }) {
+export async function sendPinCodeSMS ({ token, mobilePhoneNumber, url }) {
   try {
-    const startSmsAuthResponse = await apiService.smsAuthStart(token, mobilePhoneNumber)
+    const startSmsAuthResponse = await apiService.smsAuthStart(token, mobilePhoneNumber, url)
     return {
       userId: null,
       contentId: null,
@@ -107,7 +109,7 @@ export async function verifyPinCode ({ token, confirmationCode, challengeId }) {
   }
 }
 
-export async function purchase ({ token, userId }) {
+export async function purchase ({ token, userId, url }) {
   try {
     if (!userId) {
       return {
@@ -120,7 +122,7 @@ export async function purchase ({ token, userId }) {
         jwtToken: null
       }
     } else {
-      const purchaseResponse = await apiService.purchase(token, userId)
+      const purchaseResponse = await apiService.purchase(token, userId, url)
       return {
         userId: purchaseResponse.data.userId,
         jwtToken: purchaseResponse.data.token,
@@ -155,7 +157,7 @@ export async function refundPurchase ({ token, transactionId, refundReason }) {
   }
 }
 
-async function subscribeByTokenAndUserId ({ token, userId }) {
+async function subscribeByTokenAndUserId ({ token, userId, url }) {
   try {
     if (!userId) {
       return {
@@ -168,7 +170,7 @@ async function subscribeByTokenAndUserId ({ token, userId }) {
         jwtToken: null
       }
     } else {
-      const subscribeResponse = await apiService.subscribe(token, userId)
+      const subscribeResponse = await apiService.subscribe(token, userId, url)
       return {
         userId: subscribeResponse.data.userId,
         jwtToken: subscribeResponse.data.token,
@@ -228,19 +230,19 @@ export async function checkIpBillingStatus ({ challengeId, token, windowRef, tim
   })
 }
 
-export async function subscribeByChallengeId({ token, challengeId, timeout = 60 }) {
+export async function subscribeByChallengeId({ token, challengeId, url, timeout = 60 }) {
   if (!ipbUrl) {
     return { status, userIdToken: null, subscription: null }
   }
-  const windowRef = window.open(`${ipbUrl}/?intent=${INTENTS.SUBSCRIBE}&clientJwtToken=${token}&challengeId=${challengeId}`)
+  const windowRef = window.open(`${ipbUrl}/?intent=${INTENTS.SUBSCRIBE}&clientJwtToken=${token}&challengeId=${challengeId}${url ? '&urlB64=' + base64.encode(url) : ''}`)
   return checkIpBillingStatus({ challengeId, token, windowRef, timeout })
 }
 
-export async function subscribe({ token, userId, challengeId, timeout = 60 }) {
+export async function subscribe({ token, userId, challengeId, url, timeout = 60 }) {
   if (challengeId) {
-    return subscribeByChallengeId({ token, challengeId, timeout })
+    return subscribeByChallengeId({ token, challengeId, url, timeout })
   }
-  return subscribeByTokenAndUserId({ token, userId })
+  return subscribeByTokenAndUserId({ token, userId, url })
 }
 
 export async function unsubscribe ({ token, subscriptionId }) {
@@ -278,3 +280,5 @@ function allowedMethods (response) {
   }
   return allowedMethods
 }
+
+export const Axios = axios
