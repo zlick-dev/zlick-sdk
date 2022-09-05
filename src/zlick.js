@@ -26,16 +26,13 @@ export const setCookie = CookieService.setCookie
 
 export async function identifyClient (token) {
   try {
-    const { data } = await apiService.headerEnrichment(token)
-    const { instanceId, url } = data
-    if (shouldDetectHeaders(url)) {
-      await apiService.detectHeaders(url)
-    }
     const userIdToken = CookieService.getUserIdFromZlickCookie()
-    const identifyResponse = await apiService.identify(token, instanceId, userIdToken)
-
-    if (identifyResponse.data.ipbUrl) {
-      ipbUrl = identifyResponse.data.ipbUrl
+    // default response if user info is not cached in cookie
+    let identifyResponse = { data: { token, smsAuthRequired: true, authMethod: 'PINCODE_SMS' } }
+    if(userIdToken){
+      // Note passing a constant/placeholder instanceId because I dont want to remove the instanceId or headerEnrichment flow from the zlick api yet
+      // v1/identify requires instanceId to be passed but it does nothing with it
+      identifyResponse = await apiService.identify(token, 'c8f1b2f4-f260-434b-b669-549665676df1', userIdToken)
     }
 
     if (!identifyResponse.data.userId) {
@@ -48,7 +45,7 @@ export async function identifyClient (token) {
         allowedMethods: {
           smsAuth: true
         },
-        jwtToken: identifyResponse.data.token
+        jwtToken: token
       }
     }
     CookieService.setCookie(identifyResponse.data)
@@ -259,10 +256,6 @@ export async function unsubscribe ({ token, subscriptionId }) {
   } catch (error) {
     throw new ZlickError(error)
   }
-}
-
-function shouldDetectHeaders (url) {
-  return !!url
 }
 
 function allowedMethods (response) {
