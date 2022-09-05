@@ -1,0 +1,31 @@
+-- changelog --
+
+- version 3.0.0
+
+identifyClient(accessToken) - https://developer.zlick.it/sdk/v2.6.1/index.html#identifyclienttoken
+
+Only if the returned response has non null userId only then jwtToken will contain the payload of the response otherwise jwtToken will return back the provided access token to the identifyClient function, and the response will always be static as below.
+
+function identifyClient(accessToken) {
+	…
+
+	
+	return {
+        userId: null,
+        contentId: null,
+        hasAccessRights: false,
+        challengeId: null,
+        authMethod: 'PINCODE_SMS',
+        allowedMethods: {
+          smsAuth: true
+        },
+        jwtToken: accessToken
+	}
+}
+
+
+In summary, you only need to validate the jwtToken if the response returned has a non-empty (not null) userId.
+
+
+In other-words, you don’t need to validate JWT token if the response returned has null userId. Since the response will always be static as above for such cases.
+
