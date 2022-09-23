@@ -1,5 +1,9 @@
 -- changelog --
 
+- version 3.1.0
+
+Fixed the vulnerability of a dependency 'axios' by upgrading the axios version '0.19.0' to a stable version '0.21.2'
+
 - version 3.0.0
 
 identifyClient(accessToken) - https://developer.zlick.it/sdk/v2.6.1/index.html#identifyclienttoken

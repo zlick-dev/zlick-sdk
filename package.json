@@ -1,6 +1,6 @@
 {
   "name": "zlick-sdk",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "Zlick SDK",
   "homepage": "https://github.com/zlick-dev/zlick-sdk",
   "scripts": {
@@ -37,7 +37,7 @@
     "webpack-merge": "^4.2.2"
   },
   "dependencies": {
-    "axios": "^0.19.0",
+    "axios": "^0.21.2",
     "smpp": "^0.5.0"
   }
 }
